@@ -2,11 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const API_URL =
-    "https://todo-dashboard-oft2.onrender.com";
+const API_URL = "https://todo-dashboard-oft2.onrender.com";
 
 function Todo() {
-
     const navigate = useNavigate();
 
     const [title, setTitle] = useState("");
@@ -20,9 +18,7 @@ function Todo() {
     const token = localStorage.getItem("token");
 
     const getTodo = async () => {
-
         try {
-
             setLoading(true);
             setError("");
 
@@ -38,42 +34,36 @@ function Todo() {
             setTodos(response.data);
 
         } catch (error) {
-
-            console.log(error);
+            console.log("Get Todo Error:", error);
 
             setError(
                 error.response?.data?.message ||
-                "Failed to view tasks"
+                "Failed to load todos"
             );
-
         } finally {
-
             setLoading(false);
-
         }
     };
 
     useEffect(() => {
-
         if (!token) {
             navigate("/login");
             return;
         }
 
         getTodo();
-
     }, []);
 
+    // Logout
     const logout = () => {
-
         localStorage.removeItem("token");
         localStorage.removeItem("user");
 
         navigate("/login");
     };
 
+    // Add Todo
     const addTodo = async (e) => {
-
         e.preventDefault();
 
         if (!title.trim()) {
@@ -82,7 +72,6 @@ function Todo() {
         }
 
         try {
-
             await axios.post(
                 `${API_URL}/api/todos`,
                 {
@@ -96,12 +85,10 @@ function Todo() {
             );
 
             setTitle("");
-
             getTodo();
 
         } catch (error) {
-
-            console.log(error);
+            console.log("Add Todo Error:", error);
 
             alert(
                 error.response?.data?.message ||
@@ -110,15 +97,20 @@ function Todo() {
         }
     };
 
-    const updateTask = async (id) => {
+    // Start Edit
+    const startEdit = (todo) => {
+        setEditId(todo._id);
+        setEditTitle(todo.title);
+    };
 
+    // Update Todo
+    const updateTask = async (id) => {
         if (!editTitle.trim()) {
             alert("Please enter a task");
             return;
         }
 
         try {
-
             await axios.put(
                 `${API_URL}/api/todos/${id}`,
                 {
@@ -137,8 +129,7 @@ function Todo() {
             getTodo();
 
         } catch (error) {
-
-            console.log(error);
+            console.log("Update Todo Error:", error);
 
             alert(
                 error.response?.data?.message ||
@@ -147,13 +138,13 @@ function Todo() {
         }
     };
 
+    // Complete / Uncomplete Todo
     const toggleTodo = async (todo) => {
-
         try {
-
             await axios.put(
                 `${API_URL}/api/todos/${todo._id}`,
                 {
+                    title: todo.title,
                     completed: !todo.completed
                 },
                 {
@@ -166,23 +157,18 @@ function Todo() {
             getTodo();
 
         } catch (error) {
+            console.log("Toggle Todo Error:", error);
 
-            console.log(error);
-
-            alert("Failed to update task");
+            alert(
+                error.response?.data?.message ||
+                "Failed to update task"
+            );
         }
     };
 
-    const startEdit = (todo) => {
-
-        setEditId(todo._id);
-        setEditTitle(todo.title);
-    };
-
+    // Delete Todo
     const deleteTodo = async (id) => {
-
         try {
-
             await axios.delete(
                 `${API_URL}/api/todos/${id}`,
                 {
@@ -195,8 +181,7 @@ function Todo() {
             getTodo();
 
         } catch (error) {
-
-            console.log(error);
+            console.log("Delete Todo Error:", error);
 
             alert(
                 error.response?.data?.message ||
@@ -206,11 +191,9 @@ function Todo() {
     };
 
     return (
-
         <div className="todo-container">
 
             <div className="todo-header">
-
                 <h1>Todo List</h1>
 
                 <button
@@ -219,9 +202,9 @@ function Todo() {
                 >
                     Logout
                 </button>
-
             </div>
 
+            {/* Add Todo */}
             <form onSubmit={addTodo}>
 
                 <input
@@ -239,25 +222,29 @@ function Todo() {
 
             </form>
 
+            {/* Loading */}
             {loading && (
                 <p className="loading">
                     Loading todos...
                 </p>
             )}
 
+            {/* Error */}
             {error && (
                 <p className="error">
                     {error}
                 </p>
             )}
 
+            {/* Empty */}
             {!loading && todos.length === 0 && (
                 <p>
                     No Todo yet. Add your first task.
                 </p>
             )}
 
-            <div>
+            {/* Todo List */}
+            <div className="todo-list">
 
                 {todos.map((todo) => (
 
@@ -281,9 +268,7 @@ function Todo() {
 
                                 <button
                                     onClick={() =>
-                                        updateTask(
-                                            todo._id
-                                        )
+                                        updateTask(todo._id)
                                     }
                                 >
                                     Save
@@ -302,7 +287,6 @@ function Todo() {
                         ) : (
 
                             <>
-
                                 <input
                                     type="checkbox"
                                     checked={
@@ -333,14 +317,11 @@ function Todo() {
 
                                 <button
                                     onClick={() =>
-                                        deleteTodo(
-                                            todo._id
-                                        )
+                                        deleteTodo(todo._id)
                                     }
                                 >
                                     Delete
                                 </button>
-
                             </>
 
                         )}
