@@ -21,20 +21,21 @@ function Login() {
             setLoading(true);
 
             const response = await axios.post(
-                "http://localhost:3000/api/auth/login",
+                "https://todo-dashboard-oft2.onrender.com/api/auth/login",
                 {
-                    email: email,
-                    password: password
+                    email,
+                    password
                 }
             );
 
             console.log("Login response:", response.data);
 
-            // Save token
             if (response.data.token) {
-                localStorage.setItem("token", response.data.token);
+                localStorage.setItem(
+                    "token",
+                    response.data.token
+                );
 
-                // Save user if backend sends it
                 if (response.data.user) {
                     localStorage.setItem(
                         "user",
@@ -43,8 +44,6 @@ function Login() {
                 }
 
                 alert("Login successful!");
-
-                // Go to Todo page
                 navigate("/todo");
             } else {
                 alert("Token not received from server");
@@ -53,14 +52,10 @@ function Login() {
         } catch (error) {
             console.log("Login error:", error);
 
-            if (error.response) {
-                alert(
-                    error.response.data?.message ||
-                    "Invalid email or password"
-                );
-            } else {
-                alert("Unable to connect to the server.");
-            }
+            alert(
+                error.response?.data?.message ||
+                "Invalid email or password"
+            );
         } finally {
             setLoading(false);
         }
@@ -68,7 +63,6 @@ function Login() {
 
     return (
         <div className="login-container">
-
             <div className="login-box">
 
                 <h1>Welcome Back</h1>
@@ -84,7 +78,9 @@ function Login() {
                             type="email"
                             placeholder="Enter your email"
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            onChange={(e) =>
+                                setEmail(e.target.value)
+                            }
                         />
                     </div>
 
@@ -95,23 +91,31 @@ function Login() {
                             type="password"
                             placeholder="Enter your password"
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            onChange={(e) =>
+                                setPassword(e.target.value)
+                            }
                         />
                     </div>
 
-                    <button type="submit" disabled={loading}>
-                        {loading ? "Logging in..." : "Login"}
+                    <button
+                        type="submit"
+                        disabled={loading}
+                    >
+                        {loading
+                            ? "Logging in..."
+                            : "Login"}
                     </button>
 
                 </form>
 
                 <p>
                     Don't have an account?{" "}
-                    <Link to="/register">Register</Link>
+                    <Link to="/register">
+                        Register
+                    </Link>
                 </p>
 
             </div>
-
         </div>
     );
 }

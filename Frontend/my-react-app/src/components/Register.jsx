@@ -1,98 +1,122 @@
 import axios from "axios";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
-function Register({ onRegister }) {
+function Register() {
+    const navigate = useNavigate();
+
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
 
     const submitData = async (e) => {
         e.preventDefault();
 
-        const data = {
-            name: e.target.name.value,
-            email: e.target.email.value,
-            password: e.target.password.value
-        };
+        if (!name || !email || !password) {
+            alert("Please fill all fields");
+            return;
+        }
 
         try {
+            setLoading(true);
 
             const response = await axios.post(
-                "http://localhost:3000/api/auth/register",
-                data
+                "https://todo-dashboard-oft2.onrender.com/api/auth/register",
+                {
+                    name,
+                    email,
+                    password
+                }
             );
 
-            console.log(response.data);
+            console.log("Register response:", response.data);
 
             alert("Registration successful!");
 
-            if (onRegister) {
-                onRegister();
-            }
+            navigate("/login");
 
         } catch (error) {
+            console.log("Register error:", error);
 
-            console.log(error);
-
-            if (error.response) {
-                alert(
-                    error.response.data.message ||
-                    "Registration failed"
-                );
-            } else {
-                alert("Unable to connect to the server.");
-            }
+            alert(
+                error.response?.data?.message ||
+                "Registration failed"
+            );
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <div className="auth-form">
+        <div className="login-container">
 
-            <h2>Create Account</h2>
+            <div className="login-box">
 
-            <p className="form-subtitle">
-                Register to start managing your tasks
-            </p>
+                <h1>Create Account</h1>
 
-            <form onSubmit={submitData}>
+                <p>Register to manage your tasks</p>
 
-                <div className="input-group">
-                    <label>Name</label>
+                <form onSubmit={submitData}>
 
-                    <input
-                        type="text"
-                        name="name"
-                        placeholder="Enter your name"
-                        required
-                    />
-                </div>
+                    <div className="form-group">
+                        <label>Name</label>
 
-                <div className="input-group">
-                    <label>Email</label>
+                        <input
+                            type="text"
+                            placeholder="Enter your name"
+                            value={name}
+                            onChange={(e) =>
+                                setName(e.target.value)
+                            }
+                        />
+                    </div>
 
-                    <input
-                        type="email"
-                        name="email"
-                        placeholder="Enter your email"
-                        required
-                    />
-                </div>
+                    <div className="form-group">
+                        <label>Email</label>
 
-                <div className="input-group">
-                    <label>Password</label>
+                        <input
+                            type="email"
+                            placeholder="Enter your email"
+                            value={email}
+                            onChange={(e) =>
+                                setEmail(e.target.value)
+                            }
+                        />
+                    </div>
 
-                    <input
-                        type="password"
-                        name="password"
-                        placeholder="Create a password"
-                        required
-                    />
-                </div>
+                    <div className="form-group">
+                        <label>Password</label>
 
-                <button
-                    type="submit"
-                    className="primary-button"
-                >
-                    Create Account
-                </button>
+                        <input
+                            type="password"
+                            placeholder="Enter your password"
+                            value={password}
+                            onChange={(e) =>
+                                setPassword(e.target.value)
+                            }
+                        />
+                    </div>
 
-            </form>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                    >
+                        {loading
+                            ? "Registering..."
+                            : "Register"}
+                    </button>
+
+                </form>
+
+                <p>
+                    Already have an account?{" "}
+                    <Link to="/login">
+                        Login
+                    </Link>
+                </p>
+
+            </div>
 
         </div>
     );

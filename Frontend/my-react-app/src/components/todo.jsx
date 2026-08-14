@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
+const API_URL =
+    "https://todo-dashboard-oft2.onrender.com";
+
 function Todo() {
+
     const navigate = useNavigate();
 
     const [title, setTitle] = useState("");
@@ -15,52 +19,61 @@ function Todo() {
 
     const token = localStorage.getItem("token");
 
-    const API_URL = "http://localhost:3000/api/todos";
-
-    // GET TODOS
     const getTodo = async () => {
+
         try {
+
             setLoading(true);
             setError("");
 
-            const response = await axios.get(API_URL, {
-                headers: {
-                    Authorization: `Bearer ${token}`
+            const response = await axios.get(
+                `${API_URL}/api/todos`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
                 }
-            });
+            );
 
             setTodos(response.data);
+
         } catch (error) {
+
             console.log(error);
 
             setError(
                 error.response?.data?.message ||
                 "Failed to view tasks"
             );
+
         } finally {
+
             setLoading(false);
+
         }
     };
 
     useEffect(() => {
+
         if (!token) {
             navigate("/login");
             return;
         }
 
         getTodo();
+
     }, []);
 
-    // LOGOUT
     const logout = () => {
+
         localStorage.removeItem("token");
         localStorage.removeItem("user");
 
         navigate("/login");
     };
 
-    // ADD TODO
     const addTodo = async (e) => {
+
         e.preventDefault();
 
         if (!title.trim()) {
@@ -69,8 +82,9 @@ function Todo() {
         }
 
         try {
+
             await axios.post(
-                API_URL,
+                `${API_URL}/api/todos`,
                 {
                     title: title
                 },
@@ -82,9 +96,11 @@ function Todo() {
             );
 
             setTitle("");
+
             getTodo();
 
         } catch (error) {
+
             console.log(error);
 
             alert(
@@ -94,22 +110,17 @@ function Todo() {
         }
     };
 
-    // START EDIT
-    const startEdit = (todo) => {
-        setEditId(todo._id);
-        setEditTitle(todo.title);
-    };
-
-    // UPDATE TODO
     const updateTask = async (id) => {
+
         if (!editTitle.trim()) {
-            alert("Task cannot be empty");
+            alert("Please enter a task");
             return;
         }
 
         try {
+
             await axios.put(
-                `${API_URL}/${id}`,
+                `${API_URL}/api/todos/${id}`,
                 {
                     title: editTitle
                 },
@@ -126,6 +137,7 @@ function Todo() {
             getTodo();
 
         } catch (error) {
+
             console.log(error);
 
             alert(
@@ -135,11 +147,12 @@ function Todo() {
         }
     };
 
-    // COMPLETE / UNCOMPLETE TODO
     const toggleTodo = async (todo) => {
+
         try {
+
             await axios.put(
-                `${API_URL}/${todo._id}`,
+                `${API_URL}/api/todos/${todo._id}`,
                 {
                     completed: !todo.completed
                 },
@@ -153,20 +166,25 @@ function Todo() {
             getTodo();
 
         } catch (error) {
+
             console.log(error);
 
-            alert(
-                error.response?.data?.message ||
-                "Failed to update task"
-            );
+            alert("Failed to update task");
         }
     };
 
-    // DELETE TODO
+    const startEdit = (todo) => {
+
+        setEditId(todo._id);
+        setEditTitle(todo.title);
+    };
+
     const deleteTodo = async (id) => {
+
         try {
+
             await axios.delete(
-                `${API_URL}/${id}`,
+                `${API_URL}/api/todos/${id}`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -177,6 +195,7 @@ function Todo() {
             getTodo();
 
         } catch (error) {
+
             console.log(error);
 
             alert(
@@ -187,9 +206,11 @@ function Todo() {
     };
 
     return (
+
         <div className="todo-container">
 
             <div className="todo-header">
+
                 <h1>Todo List</h1>
 
                 <button
@@ -198,16 +219,18 @@ function Todo() {
                 >
                     Logout
                 </button>
+
             </div>
 
-            {/* ADD TODO */}
             <form onSubmit={addTodo}>
 
                 <input
                     type="text"
                     placeholder="Enter a new task"
                     value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    onChange={(e) =>
+                        setTitle(e.target.value)
+                    }
                 />
 
                 <button type="submit">
@@ -216,110 +239,115 @@ function Todo() {
 
             </form>
 
-            {/* LOADING */}
             {loading && (
                 <p className="loading">
                     Loading todos...
                 </p>
             )}
 
-            {/* ERROR */}
             {error && (
                 <p className="error">
                     {error}
                 </p>
             )}
 
-            {/* EMPTY */}
-            {!loading && !error && todos.length === 0 && (
+            {!loading && todos.length === 0 && (
                 <p>
-                    No Todo yet. Add your First Task in it
+                    No Todo yet. Add your first task.
                 </p>
             )}
 
-            {/* TODO LIST */}
             <div>
 
-                {!loading &&
-                    todos.map((todo) => (
+                {todos.map((todo) => (
 
-                        <div
-                            className="todo-item"
-                            key={todo._id}
-                        >
+                    <div
+                        className="todo-item"
+                        key={todo._id}
+                    >
 
-                            {editId === todo._id ? (
+                        {editId === todo._id ? (
 
-                                <>
-                                    <input
-                                        type="text"
-                                        value={editTitle}
-                                        onChange={(e) =>
-                                            setEditTitle(e.target.value)
-                                        }
-                                    />
+                            <>
+                                <input
+                                    type="text"
+                                    value={editTitle}
+                                    onChange={(e) =>
+                                        setEditTitle(
+                                            e.target.value
+                                        )
+                                    }
+                                />
 
-                                    <button
-                                        onClick={() =>
-                                            updateTask(todo._id)
-                                        }
-                                    >
-                                        Save
-                                    </button>
+                                <button
+                                    onClick={() =>
+                                        updateTask(
+                                            todo._id
+                                        )
+                                    }
+                                >
+                                    Save
+                                </button>
 
-                                    <button
-                                        onClick={() => {
-                                            setEditId(null);
-                                            setEditTitle("");
-                                        }}
-                                    >
-                                        Cancel
-                                    </button>
-                                </>
+                                <button
+                                    onClick={() => {
+                                        setEditId(null);
+                                        setEditTitle("");
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+                            </>
 
-                            ) : (
+                        ) : (
 
-                                <>
-                                    <input
-                                        type="checkbox"
-                                        checked={todo.completed}
-                                        onChange={() =>
-                                            toggleTodo(todo)
-                                        }
-                                    />
+                            <>
 
-                                    <span
-                                        className={
-                                            todo.completed
-                                                ? "completed"
-                                                : ""
-                                        }
-                                    >
-                                        {todo.title}
-                                    </span>
+                                <input
+                                    type="checkbox"
+                                    checked={
+                                        todo.completed || false
+                                    }
+                                    onChange={() =>
+                                        toggleTodo(todo)
+                                    }
+                                />
 
-                                    <button
-                                        onClick={() =>
-                                            startEdit(todo)
-                                        }
-                                    >
-                                        Edit
-                                    </button>
+                                <span
+                                    className={
+                                        todo.completed
+                                            ? "completed"
+                                            : ""
+                                    }
+                                >
+                                    {todo.title}
+                                </span>
 
-                                    <button
-                                        onClick={() =>
-                                            deleteTodo(todo._id)
-                                        }
-                                    >
-                                        Delete
-                                    </button>
-                                </>
+                                <button
+                                    onClick={() =>
+                                        startEdit(todo)
+                                    }
+                                >
+                                    Edit
+                                </button>
 
-                            )}
+                                <button
+                                    onClick={() =>
+                                        deleteTodo(
+                                            todo._id
+                                        )
+                                    }
+                                >
+                                    Delete
+                                </button>
 
-                        </div>
+                            </>
 
-                    ))}
+                        )}
+
+                    </div>
+
+                ))}
 
             </div>
 
