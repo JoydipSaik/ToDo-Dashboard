@@ -1,123 +1,106 @@
-import axios from "axios";
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
 
 function Login() {
-    const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [loading, setLoading] = useState(false);
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
-    const submitData = async (e) => {
-        e.preventDefault();
+    setMessage("");
 
-        if (!email || !password) {
-            alert("Please enter email and password");
-            return;
-        }
+    if (!email || !password) {
+      setMessage("Please enter email and password");
+      return;
+    }
 
-        try {
-            setLoading(true);
+    try {
+      setLoading(true);
 
-            const response = await axios.post(
-                "https://todo-dashboard-oft2.onrender.com/api/auth/login",
-                {
-                    email,
-                    password
-                }
-            );
+      const response = await fetch("http://localhost:3000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+        }),
+      });
 
-            console.log("Login response:", response.data);
+      const data = await response.json();
 
-            if (response.data.token) {
-                localStorage.setItem(
-                    "token",
-                    response.data.token
-                );
+      console.log("Login response:", data);
 
-                if (response.data.user) {
-                    localStorage.setItem(
-                        "user",
-                        JSON.stringify(response.data.user)
-                    );
-                }
+      if (!response.ok) {
+        setMessage(data.message || "Login failed");
+        return;
+      }
 
-                alert("Login successful!");
-                navigate("/todo");
-            } else {
-                alert("Token not received from server");
-            }
+      // Save token if your backend returns one
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
 
-        } catch (error) {
-            console.log("Login error:", error);
+      setMessage("Login successful!");
 
-            alert(
-                error.response?.data?.message ||
-                "Invalid email or password"
-            );
-        } finally {
-            setLoading(false);
-        }
-    };
+      // Change this according to your dashboard route
+      window.location.hash = "#/todo";
 
-    return (
-        <div className="login-container">
-            <div className="login-box">
+    } catch (error) {
+      console.error("Login error:", error);
+      setMessage("Unable to connect to server");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-                <h1>Welcome Back</h1>
+  return (
+    <div className="login-container">
+      <form onSubmit={handleLogin}>
 
-                <p>Login to manage your tasks</p>
+        <h1>Welcome Back</h1>
 
-                <form onSubmit={submitData}>
+        <p>Login to manage your tasks</p>
 
-                    <div className="form-group">
-                        <label>Email</label>
+        <label>EMAIL</label>
 
-                        <input
-                            type="email"
-                            placeholder="Enter your email"
-                            value={email}
-                            onChange={(e) =>
-                                setEmail(e.target.value)
-                            }
-                        />
-                    </div>
+        <input
+          type="email"
+          placeholder="Enter your email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
-                    <div className="form-group">
-                        <label>Password</label>
+        <label>PASSWORD</label>
 
-                        <input
-                            type="password"
-                            placeholder="Enter your password"
-                            value={password}
-                            onChange={(e) =>
-                                setPassword(e.target.value)
-                            }
-                        />
-                    </div>
+        <input
+          type="password"
+          placeholder="Enter your password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
-                    <button
-                        type="submit"
-                        disabled={loading}
-                    >
-                        {loading
-                            ? "Logging in..."
-                            : "Login"}
-                    </button>
+        <button type="submit" disabled={loading}>
+          {loading ? "LOGGING IN..." : "LOGIN"}
+        </button>
 
-                </form>
+        {message && (
+          <div className="login-message">
+            {message}
+          </div>
+        )}
 
-                <p>
-                    Don't have an account?{" "}
-                    <Link to="/register">
-                        Register
-                    </Link>
-                </p>
+        <p>
+          Don't have an account?{" "}
+          <a href="#/register">Register</a>
+        </p>
 
-            </div>
-        </div>
-    );
+      </form>
+    </div>
+  );
 }
 
 export default Login;
